@@ -2,71 +2,153 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>M3u Player</title>
+  <title>MThree Player</title>
   <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: #222;
       color: #fff;
+      margin: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
-      margin: 0;
     }
-    h1 { font-weight: 600; margin-bottom: 10px; }
+    h1 {
+      color: #ff6600;
+      margin: 20px 0;
+    }
+    .tabs {
+      display: flex;
+      background: #ff6600;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      background: #ff6600;
+      transition: background 0.3s;
+    }
+    .tab.active {
+      background: #cc5200;
+      font-weight: bold;
+    }
+    .tab:hover {
+      background: #e65c00;
+    }
+    .tab-content {
+      display: none;
+      width: 80%;
+      max-width: 900px;
+    }
+    .tab-content.active {
+      display: block;
+    }
     .input-container {
-      display: flex; gap: 10px; margin-bottom: 20px;
-      width: 70%; max-width: 700px;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
     }
     input {
-      flex: 1; padding: 12px; border-radius: 8px;
-      border: none; outline: none; font-size: 14px;
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
     }
     button {
-      padding: 12px 20px; border: none; border-radius: 8px;
-      background: #1db954; color: #fff; font-weight: bold;
-      cursor: pointer; transition: 0.3s;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      background: #ff6600;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    button:hover { background: #17a74a; transform: scale(1.05); }
+    button:hover {
+      background: #cc5200;
+      transform: scale(1.05);
+    }
     .player-container {
-      width: 80%; max-width: 900px; border-radius: 12px;
-      overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.5);
     }
-    video { width: 100%; height: auto; border-radius: 12px; }
-    .controls-extra { margin-top: 15px; display: flex; gap: 10px; }
+    video {
+      width: 100%;
+      height: auto;
+    }
+    .controls-extra {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
     .recording { background: #e63946 !important; }
   </style>
 </head>
 <body>
   <h1>M3u Player</h1>
-  <div class="input-container">
-    <input type="text" id="m3uLink" placeholder="https://exemplo.com/playlist.m3u8" />
-    <button onclick="playStream()">▶ Play</button>
+
+  <!-- Abas -->
+  <div class="tabs">
+    <div class="tab active" onclick="openTab('tab1')">📺 Player 1</div>
+    <div class="tab" onclick="openTab('tab2')">🎬 Player 2</div>
   </div>
 
-  <div class="player-container">
-    <video id="videoPlayer" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+  <!-- Conteúdo da aba 1 -->
+  <div id="tab1" class="tab-content active">
+    <div class="input-container">
+      <input type="text" id="m3uLink1" placeholder="https://exemplo.com/playlist1.m3u8" />
+      <button onclick="playStream('m3uLink1','videoPlayer1')">▶ Play</button>
+    </div>
+    <div class="player-container">
+      <video id="videoPlayer1" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+    </div>
+    <div class="controls-extra">
+      <button onclick="toggleRecording('videoPlayer1')">⏺ Gravar</button>
+      <button onclick="takeSnapshot('videoPlayer1')">📸 Foto</button>
+    </div>
   </div>
 
-  <div class="controls-extra">
-    <button id="recordBtn" onclick="toggleRecording()">⏺ Gravar</button>
-    <button onclick="takeSnapshot()">📸 Foto</button>
+  <!-- Conteúdo da aba 2 -->
+  <div id="tab2" class="tab-content">
+    <div class="input-container">
+      <input type="text" id="m3uLink2" placeholder="https://exemplo.com/playlist2.m3u8" />
+      <button onclick="playStream('m3uLink2','videoPlayer2')">▶ Play</button>
+    </div>
+    <div class="player-container">
+      <video id="videoPlayer2" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+    </div>
+    <div class="controls-extra">
+      <button onclick="toggleRecording('videoPlayer2')">⏺ Gravar</button>
+      <button onclick="takeSnapshot('videoPlayer2')">📸 Foto</button>
+    </div>
   </div>
 
   <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
   <script>
-    const player = videojs('videoPlayer', {
-      fluid: true,
-      autoplay: false,
-      controlBar: { volumePanel: { inline: false } }
-    });
+    const players = {
+      videoPlayer1: videojs('videoPlayer1'),
+      videoPlayer2: videojs('videoPlayer2')
+    };
 
-    function playStream() {
-      const url = document.getElementById('m3uLink').value;
+    function openTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function playStream(inputId, playerId) {
+      const url = document.getElementById(inputId).value;
+      const player = players[playerId];
       if (url) {
         player.src({ src: url, type: 'application/x-mpegURL' });
         player.play().catch(() => {
@@ -84,18 +166,16 @@
     let recordedChunks = [];
     let isRecording = false;
 
-    async function toggleRecording() {
-      const recordBtn = document.getElementById('recordBtn');
-      const videoElement = document.querySelector('#videoPlayer_html5_api');
+    function toggleRecording(playerId) {
+      const videoElement = document.querySelector(`#${playerId}_html5_api`);
+      const recordBtn = event.target;
 
       if (!isRecording) {
         const stream = videoElement.captureStream();
         mediaRecorder = new MediaRecorder(stream);
-
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) recordedChunks.push(event.data);
         };
-
         mediaRecorder.onstop = () => {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
@@ -105,7 +185,6 @@
           a.click();
           recordedChunks = [];
         };
-
         mediaRecorder.start();
         isRecording = true;
         recordBtn.textContent = "⏹ Parar Gravação";
@@ -118,8 +197,8 @@
       }
     }
 
-    function takeSnapshot() {
-      const videoElement = document.querySelector('#videoPlayer_html5_api');
+    function takeSnapshot(playerId) {
+      const videoElement = document.querySelector(`#${playerId}_html5_api`);
       const canvas = document.createElement('canvas');
       canvas.width = videoElement.videoWidth;
       canvas.height = videoElement.videoHeight;
