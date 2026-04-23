@@ -6,52 +6,95 @@
   <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #121212;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       color: #fff;
-      text-align: center;
-      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
     }
     h1 {
+      font-weight: 600;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .input-container {
+      display: flex;
+      gap: 10px;
       margin-bottom: 20px;
+      width: 70%;
+      max-width: 700px;
     }
     input {
-      width: 60%;
-      padding: 10px;
-      border-radius: 5px;
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
       border: none;
-      margin-bottom: 20px;
+      outline: none;
+      font-size: 14px;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background: #1db954;
       color: #fff;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 16px;
+      transition: 0.3s;
     }
     button:hover {
       background: #17a74a;
+      transform: scale(1.05);
     }
     .player-container {
-      margin-top: 30px;
+      width: 80%;
+      max-width: 900px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      margin-top: 20px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+    .controls-extra {
+      margin-top: 15px;
+    }
+    .recording {
+      background: #e63946 !important;
     }
   </style>
 </head>
 <body>
   <h1>M3u Player</h1>
-  <p>Cole abaixo o link do seu arquivo .m3u ou .m3u8:</p>
-  <input type="text" id="m3uLink" placeholder="https://exemplo.com/playlist.m3u8" />
-  <button onclick="playStream()">Reproduzir</button>
+  <div class="input-container">
+    <input type="text" id="m3uLink" placeholder="https://exemplo.com/playlist.m3u8" />
+    <button onclick="playStream()">▶ Play</button>
+  </div>
 
   <div class="player-container">
-    <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360"></video>
+    <video id="videoPlayer" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+  </div>
+
+  <div class="controls-extra">
+    <button id="recordBtn" onclick="toggleRecording()">⏺ Gravar</button>
   </div>
 
   <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
   <script>
-    const player = videojs('videoPlayer');
+    const player = videojs('videoPlayer', {
+      fluid: true,
+      autoplay: false,
+      controlBar: {
+        volumePanel: { inline: false }
+      }
+    });
 
     function playStream() {
       const url = document.getElementById('m3uLink').value;
@@ -62,6 +105,48 @@
         alert("Por favor, insira um link válido de .m3u ou .m3u8");
       }
     }
+
+    let mediaRecorder;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    async function toggleRecording() {
+      const recordBtn = document.getElementById('recordBtn');
+      const videoElement = document.querySelector('#videoPlayer_html5_api');
+
+      if (!isRecording) {
+        // Captura o stream do vídeo
+        const stream = videoElement.captureStream();
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'gravacao.webm';
+          a.click();
+          recordedChunks = [];
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordBtn.textContent = "⏹ Parar Gravação";
+        recordBtn.classList.add("recording");
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordBtn.textContent = "⏺ Gravar";
+        recordBtn.classList.remove("recording");
+      }
+    }
   </script>
 </body>
 </html>
+>
