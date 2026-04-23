@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>M3u Player</title>
+  <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 60%;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #1db954;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #17a74a;
+    }
+    .player-container {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>M3u Player</h1>
+  <p>Cole abaixo o link do seu arquivo .m3u ou .m3u8:</p>
+  <input type="text" id="m3uLink" placeholder="https://exemplo.com/playlist.m3u8" />
+  <button onclick="playStream()">Reproduzir</button>
+
+  <div class="player-container">
+    <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360"></video>
+  </div>
+
+  <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+  <script>
+    const player = videojs('videoPlayer');
+
+    function playStream() {
+      const url = document.getElementById('m3uLink').value;
+      if (url) {
+        player.src({ src: url, type: 'application/x-mpegURL' });
+        player.play();
+      } else {
+        alert("Por favor, insira um link válido de .m3u ou .m3u8");
+      }
+    }
+  </script>
+</body>
+</html>
