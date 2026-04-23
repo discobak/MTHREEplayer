@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>MThree Player</title>
+  <title>MThree Player com Search</title>
   <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
   <style>
     body {
@@ -84,8 +84,10 @@
   <script>
     const player = videojs('videoPlayer', { fluid: true, autoplay: false });
 
-    function playStream() {
-      const url = document.getElementById('m3uLink').value;
+    function playStream(url) {
+      if (!url) {
+        url = document.getElementById('m3uLink').value;
+      }
       if (url) {
         player.src({ src: url, type: 'application/x-mpegURL' });
         player.play().catch(() => {
@@ -161,11 +163,22 @@
 
         resultsDiv.innerHTML = "<h4>Resultados:</h4>";
         filtered.forEach(issue => {
+          // procura links .m3u ou .m3u8 no corpo do issue
+          const regex = /(https?:\/\/[^\s]+\.m3u8?)/gi;
+          const matches = issue.body ? issue.body.match(regex) : null;
+          let linkHtml = "";
+          if (matches && matches.length > 0) {
+            const m3uLink = matches[0];
+            linkHtml = `<button onclick="playStream('${m3uLink}')">▶ Reproduzir este M3U</button>`;
+          } else {
+            linkHtml = "<p>Nenhum link .m3u encontrado neste issue.</p>";
+          }
+
           const item = document.createElement("div");
           item.innerHTML = `
             <p><strong>#${issue.number} - ${issue.title}</strong></p>
             <p>Status: ${issue.state}</p>
-            <p><a href="${issue.html_url}" target="_blank">Abrir no GitHub</a></p>
+            ${linkHtml}
           `;
           resultsDiv.appendChild(item);
         });
