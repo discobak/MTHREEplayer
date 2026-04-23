@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: "Comic Sans MS", cursive, sans-serif;
-      background: #121212; /* tema escuro */
+      background: #121212;
       color: #eee;
       margin: 0;
       display: flex;
@@ -56,6 +56,16 @@
       padding: 10px;
       border-radius: 6px;
     }
+    #helpBtn {
+      margin-left:10px; padding:5px 10px; font-size:12px;
+      border:none; border-radius:6px; background:#444; color:#fff;
+      cursor:pointer; font-family:"Comic Sans MS";
+    }
+    #popup {
+      display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+      background:#1e1e1e; color:#eee; padding:20px; border-radius:10px;
+      box-shadow:0 0 20px rgba(0,0,0,0.7); font-family:"Comic Sans MS"; max-width:400px;
+    }
   </style>
 </head>
 <body>
@@ -75,12 +85,26 @@
     <button onclick="takeSnapshot()">📸 Foto</button>
   </div>
 
-  <!-- Search Issues -->
+  <!-- Search WebTVs -->
   <div id="searchBox">
-    <h3>🔎 Buscar Issues no GitHub</h3>
+    <h3>🔎 Buscar WebTVs 
+      <button id="helpBtn">Como coloco?</button>
+    </h3>
     <input type="text" id="searchInput" placeholder="Digite palavra-chave (ex: m3u)" />
     <button onclick="searchIssues()">Buscar</button>
     <div id="results"></div>
+  </div>
+
+  <!-- Popup -->
+  <div id="popup">
+    <h3>Como coloco?</h3>
+    <p>
+      Abra o link 
+      <a href="https://github.com/discobak/Mthree_Archives/issues" target="_blank" style="color:#ff6600; font-weight:bold;">
+        https://github.com/discobak/Mthree_Archives/issues
+      </a>, crie um novo <strong>issue</strong> e preencha com o link da sua WebTV (<code>.m3u</code> ou <code>.m3u8</code>).
+    </p>
+    <button onclick="closePopup()" style="margin-top:10px; padding:6px 12px; font-size:12px; border:none; border-radius:6px; background:#ff6600; color:#fff; cursor:pointer; font-family:'Comic Sans MS';">Fechar</button>
   </div>
 
   <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
@@ -94,10 +118,10 @@
       if (url) {
         player.src({ src: url, type: 'application/x-mpegURL' });
         player.play().catch(() => {
-          alert("O m3u está offline. Pede pro dono ligar");
+          alert("A transmissão está instável. Contate **CartoonNetworkThree** para confirmar se é erro de transmissão. Caso não seja, reinicie a página.");
         });
         player.on('error', () => {
-          alert("O m3u está offline. Pede pro dono ligar");
+          alert("A transmissão está instável. Contate **CartoonNetworkThree** para confirmar se é erro de transmissão. Caso não seja, reinicie a página.");
         });
       } else {
         alert("Por favor, insira um link válido de .m3u ou .m3u8");
@@ -116,7 +140,7 @@
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url; a.download = 'gravaçãodiscobak.webm'; a.click();
+          a.href = url; a.download = 'gravacao.webm'; a.click();
           recordedChunks = [];
         };
         mediaRecorder.start();
@@ -156,39 +180,4 @@
 
         const filtered = issues.filter(issue =>
           issue.title.toLowerCase().includes(query) ||
-          (issue.body && issue.body.toLowerCase().includes(query))
-        );
-
-        if (filtered.length === 0) {
-          resultsDiv.innerHTML = "Nenhum issue encontrado.";
-          return;
-        }
-
-        resultsDiv.innerHTML = "<h4>Resultados:</h4>";
-        filtered.forEach(issue => {
-          const regex = /(https?:\/\/[^\s]+\.m3u8?)/gi;
-          const matches = issue.body ? issue.body.match(regex) : null;
-          let linkHtml = "";
-          if (matches && matches.length > 0) {
-            const m3uLink = matches[0];
-            linkHtml = `<button onclick="playStream('${m3uLink}')">▶ Reproduzir este M3U</button>`;
-          } else {
-            linkHtml = "<p>Nenhum link .m3u encontrado neste issue.</p>";
-          }
-
-          const item = document.createElement("div");
-          item.innerHTML = `
-            <p><strong>#${issue.number} - ${issue.title}</strong></p>
-            <p>Status: ${issue.state}</p>
-            ${linkHtml}
-          `;
-          resultsDiv.appendChild(item);
-        });
-      } catch (err) {
-        resultsDiv.innerHTML = "Erro ao buscar issues.";
-        console.error(err);
-      }
-    }
-  </script>
-</body>
-</html>
+          (issue.body && issue.body
