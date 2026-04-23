@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: "Comic Sans MS", cursive, sans-serif;
-      background: #222;
+      background: linear-gradient(135deg, #ff6600, #ff8533, #ff9966);
       color: #fff;
       margin: 0;
       display: flex;
@@ -15,140 +15,108 @@
       align-items: center;
       min-height: 100vh;
     }
-    h1 {
-      color: #ff6600;
-      margin: 20px 0;
-    }
-    .tabs {
-      display: flex;
-      background: #ff6600;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      background: #ff6600;
-      transition: background 0.3s;
-    }
-    .tab.active {
-      background: #cc5200;
-      font-weight: bold;
-    }
-    .tab:hover {
-      background: #e65c00;
-    }
-    .tab-content {
-      display: none;
-      width: 80%;
-      max-width: 900px;
-    }
-    .tab-content.active {
-      display: block;
-    }
+    h1 { margin: 20px 0; font-size: 2.5rem; text-shadow: 2px 2px #000; }
     .input-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+      display: flex; gap: 10px; margin-bottom: 20px;
+      width: 80%; max-width: 1000px;
     }
     input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      outline: none;
+      flex: 1; padding: 14px; border-radius: 8px;
+      border: none; outline: none; font-size: 16px;
     }
     button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 6px;
-      background: #ff6600;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
+      padding: 14px 20px; border: none; border-radius: 8px;
+      background: #cc5200; color: #fff; font-weight: bold;
+      cursor: pointer; transition: 0.3s;
     }
-    button:hover {
-      background: #cc5200;
-      transform: scale(1.05);
-    }
+    button:hover { background: #993d00; transform: scale(1.05); }
     .player-container {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+      width: 90%; max-width: 1200px; border-radius: 12px;
+      overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.6);
     }
-    video {
-      width: 100%;
-      height: auto;
-    }
+    video { width: 100%; height: 600px; border-radius: 12px; }
     .controls-extra {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
+      margin-top: 15px; display: flex; gap: 15px; justify-content: center;
     }
     .recording { background: #e63946 !important; }
+    /* Chat */
+    #chatBox {
+      width: 90%; max-width: 800px; background: #fff; color: #000;
+      padding: 10px; border-radius: 8px; margin-top: 20px;
+    }
+    #messages {
+      height: 250px; overflow-y: auto; border: 1px solid #ccc;
+      padding: 5px; margin-bottom: 10px; background: #f9f9f9;
+    }
+    #messages div { margin: 5px 0; padding: 5px; background: #eee; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <h1>M3u Player</h1>
+  <h1>MThree Player</h1>
 
-  <!-- Abas -->
-  <div class="tabs">
-    <div class="tab active" onclick="openTab('tab1')">📺 Player 1</div>
-    <div class="tab" onclick="openTab('tab2')">🎬 Player 2</div>
+  <div class="input-container">
+    <input type="text" id="m3uLink" placeholder="https://exemplo.com/playlist.m3u8" />
+    <button onclick="playStream()">▶ Play</button>
   </div>
 
-  <!-- Conteúdo da aba 1 -->
-  <div id="tab1" class="tab-content active">
-    <div class="input-container">
-      <input type="text" id="m3uLink1" placeholder="https://exemplo.com/playlist1.m3u8" />
-      <button onclick="playStream('m3uLink1','videoPlayer1')">▶ Play</button>
-    </div>
-    <div class="player-container">
-      <video id="videoPlayer1" class="video-js vjs-big-play-centered" controls preload="auto"></video>
-    </div>
-    <div class="controls-extra">
-      <button onclick="toggleRecording('videoPlayer1')">⏺ Gravar</button>
-      <button onclick="takeSnapshot('videoPlayer1')">📸 Foto</button>
-    </div>
+  <div class="player-container">
+    <video id="videoPlayer" class="video-js vjs-big-play-centered" controls preload="auto"></video>
   </div>
 
-  <!-- Conteúdo da aba 2 -->
-  <div id="tab2" class="tab-content">
-    <div class="input-container">
-      <input type="text" id="m3uLink2" placeholder="https://exemplo.com/playlist2.m3u8" />
-      <button onclick="playStream('m3uLink2','videoPlayer2')">▶ Play</button>
-    </div>
-    <div class="player-container">
-      <video id="videoPlayer2" class="video-js vjs-big-play-centered" controls preload="auto"></video>
-    </div>
-    <div class="controls-extra">
-      <button onclick="toggleRecording('videoPlayer2')">⏺ Gravar</button>
-      <button onclick="takeSnapshot('videoPlayer2')">📸 Foto</button>
-    </div>
+  <div class="controls-extra">
+    <button id="recordBtn" onclick="toggleRecording()">⏺ Gravar</button>
+    <button onclick="takeSnapshot()">📸 Foto</button>
+  </div>
+
+  <!-- Chat ao vivo -->
+  <div id="chatBox">
+    <h3>💬 Chat ao vivo</h3>
+    <div id="messages"></div>
+    <input type="text" id="msgInput" placeholder="Digite sua mensagem..." />
+    <button onclick="sendMessage()">Enviar</button>
   </div>
 
   <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
-  <script>
-    const players = {
-      videoPlayer1: videojs('videoPlayer1'),
-      videoPlayer2: videojs('videoPlayer2')
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    // 🔧 Configure seu Firebase aqui
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      databaseURL: "https://SEU_PROJETO.firebaseio.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "ID",
+      appId: "APP_ID"
     };
 
-    function openTab(tabId) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const chatRef = ref(db, "chat");
+
+    function sendMessage() {
+      const msg = document.getElementById("msgInput").value;
+      if (msg) {
+        push(chatRef, { text: msg });
+        document.getElementById("msgInput").value = "";
+      }
     }
 
-    function playStream(inputId, playerId) {
-      const url = document.getElementById(inputId).value;
-      const player = players[playerId];
+    onChildAdded(chatRef, (data) => {
+      const msgDiv = document.createElement("div");
+      msgDiv.textContent = data.val().text;
+      document.getElementById("messages").appendChild(msgDiv);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    });
+  </script>
+
+  <script>
+    const player = videojs('videoPlayer', { fluid: true, autoplay: false });
+
+    function playStream() {
+      const url = document.getElementById('m3uLink').value;
       if (url) {
         player.src({ src: url, type: 'application/x-mpegURL' });
         player.play().catch(() => {
@@ -162,27 +130,19 @@
       }
     }
 
-    let mediaRecorder;
-    let recordedChunks = [];
-    let isRecording = false;
-
-    function toggleRecording(playerId) {
-      const videoElement = document.querySelector(`#${playerId}_html5_api`);
-      const recordBtn = event.target;
-
+    let mediaRecorder, recordedChunks = [], isRecording = false;
+    function toggleRecording() {
+      const recordBtn = document.getElementById('recordBtn');
+      const videoElement = document.querySelector('#videoPlayer_html5_api');
       if (!isRecording) {
         const stream = videoElement.captureStream();
         mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) recordedChunks.push(event.data);
-        };
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.onstop = () => {
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url;
-          a.download = 'gravaçãodiscobak.webm';
-          a.click();
+          a.href = url; a.download = 'gravaçãodiscobak.webm'; a.click();
           recordedChunks = [];
         };
         mediaRecorder.start();
@@ -197,19 +157,17 @@
       }
     }
 
-    function takeSnapshot(playerId) {
-      const videoElement = document.querySelector(`#${playerId}_html5_api`);
+    function takeSnapshot() {
+      const videoElement = document.querySelector('#videoPlayer_html5_api');
       const canvas = document.createElement('canvas');
       canvas.width = videoElement.videoWidth;
       canvas.height = videoElement.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => {
+      canvas.toBlob(blob => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = 'snapshot.png';
-        a.click();
+        a.href = url; a.download = 'snapshot.png'; a.click();
       });
     }
   </script>
