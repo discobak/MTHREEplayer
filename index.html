@@ -55,6 +55,15 @@
       margin-bottom: 10px;
       padding: 10px;
       border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #results img {
+      width: 80px;
+      height: auto;
+      border-radius: 4px;
+      margin-left: 10px;
     }
   </style>
 </head>
@@ -176,11 +185,22 @@
             linkHtml = "<p>Nenhum link .m3u encontrado neste issue.</p>";
           }
 
+          // procurar imagens anexadas
+          const imgRegex = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif))/gi;
+          const imgMatches = issue.body ? issue.body.match(imgRegex) : null;
+          let imgHtml = "";
+          if (imgMatches && imgMatches.length > 0) {
+            imgHtml = `<img src="${imgMatches[0]}" alt="anexo">`;
+          }
+
           const item = document.createElement("div");
           item.innerHTML = `
-            <p><strong>#${issue.number} - ${issue.title}</strong></p>
-            <p>Status: ${issue.state}</p>
-            ${linkHtml}
+            <div>
+              <p><strong>#${issue.number} - ${issue.title}</strong></p>
+              <p>Status: ${issue.state}</p>
+              ${linkHtml}
+            </div>
+            ${imgHtml}
           `;
           resultsDiv.appendChild(item);
         });
