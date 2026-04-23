@@ -16,59 +16,29 @@
       min-height: 100vh;
       margin: 0;
     }
-    h1 {
-      font-weight: 600;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
+    h1 { font-weight: 600; margin-bottom: 10px; }
     .input-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      width: 70%;
-      max-width: 700px;
+      display: flex; gap: 10px; margin-bottom: 20px;
+      width: 70%; max-width: 700px;
     }
     input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 14px;
+      flex: 1; padding: 12px; border-radius: 8px;
+      border: none; outline: none; font-size: 14px;
     }
     button {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #1db954;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
+      padding: 12px 20px; border: none; border-radius: 8px;
+      background: #1db954; color: #fff; font-weight: bold;
+      cursor: pointer; transition: 0.3s;
     }
-    button:hover {
-      background: #17a74a;
-      transform: scale(1.05);
-    }
+    button:hover { background: #17a74a; transform: scale(1.05); }
     .player-container {
-      width: 80%;
-      max-width: 900px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      width: 80%; max-width: 900px; border-radius: 12px;
+      overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
       margin-top: 20px;
     }
-    video {
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-    }
-    .controls-extra {
-      margin-top: 15px;
-    }
-    .recording {
-      background: #e63946 !important;
-    }
+    video { width: 100%; height: auto; border-radius: 12px; }
+    .controls-extra { margin-top: 15px; display: flex; gap: 10px; }
+    .recording { background: #e63946 !important; }
   </style>
 </head>
 <body>
@@ -84,6 +54,7 @@
 
   <div class="controls-extra">
     <button id="recordBtn" onclick="toggleRecording()">⏺ Gravar</button>
+    <button onclick="takeSnapshot()">📸 Foto</button>
   </div>
 
   <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
@@ -91,16 +62,19 @@
     const player = videojs('videoPlayer', {
       fluid: true,
       autoplay: false,
-      controlBar: {
-        volumePanel: { inline: false }
-      }
+      controlBar: { volumePanel: { inline: false } }
     });
 
     function playStream() {
       const url = document.getElementById('m3uLink').value;
       if (url) {
         player.src({ src: url, type: 'application/x-mpegURL' });
-        player.play();
+        player.play().catch(() => {
+          alert("O m3u está offline. Pede pro dono ligar");
+        });
+        player.on('error', () => {
+          alert("O m3u está offline. Pede pro dono ligar");
+        });
       } else {
         alert("Por favor, insira um link válido de .m3u ou .m3u8");
       }
@@ -115,14 +89,11 @@
       const videoElement = document.querySelector('#videoPlayer_html5_api');
 
       if (!isRecording) {
-        // Captura o stream do vídeo
         const stream = videoElement.captureStream();
         mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
+          if (event.data.size > 0) recordedChunks.push(event.data);
         };
 
         mediaRecorder.onstop = () => {
@@ -130,7 +101,7 @@
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = 'gravacao.webm';
+          a.download = 'gravaçãodiscobak.webm';
           a.click();
           recordedChunks = [];
         };
@@ -146,7 +117,22 @@
         recordBtn.classList.remove("recording");
       }
     }
+
+    function takeSnapshot() {
+      const videoElement = document.querySelector('#videoPlayer_html5_api');
+      const canvas = document.createElement('canvas');
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'snapshot.png';
+        a.click();
+      });
+    }
   </script>
 </body>
 </html>
->
